@@ -194,7 +194,7 @@ const completeTransaction = async (req, res) => {
         let id = req.params.id;
 
         //store transaction table
-        const dataTransaction = await Transactions.findOne({ where: { id, status: transactionEnums.WAITING, user_id_operator: user_id } })
+        const dataTransaction = await Transactions.findOne({ where: { id, status: transactionEnums.WAITING, user_id: user_id } })
 
         if(!dataTransaction){
             return res.status(404).json({
@@ -207,6 +207,17 @@ const completeTransaction = async (req, res) => {
         },{ 
             where: { id } 
         });
+
+
+        let balance = dataTransaction.total
+
+        const updateUserMember = await Members.update({
+            balance
+        }, {
+            where: {
+                id: user_id
+            }
+        })
 
         res.status(200).json({
             message: "Berhasil menyelesaikan pembelian sampah",
@@ -229,6 +240,53 @@ const getDataOperator = async (req, res) => {
 
         if(status){
             whereCondition.status = status
+        }
+
+        const data = await Transactions.findAll({ 
+            include: [{
+                model: TransactionDetails,
+                as: "details",
+                include: [{
+                    model: Trashes,
+                    as: "trash"
+                }]
+            }, 
+            {
+                model: Users,
+                as: "member",
+                include: [{
+                    model: Members,
+                    as: "member"
+                }]
+            }, 
+            {
+                model: Users,
+                as: "operator",
+                include: [{
+                    model: Operators,
+                    as: "operator"
+                }]
+            }
+        ],
+            where: whereCondition
+        });
+
+        res.status(200).json({
+            message: "Berhasil mengambil data",
+            data: data
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        })
+    }
+}
+
+const getDataDiscoverTrasnaction = async (req, res) => {
+    try {
+        let whereCondition = {
+
+            status: "PENDING"
         }
 
         const data = await Transactions.findAll({ 
@@ -328,5 +386,6 @@ module.exports = {
     buyTransaction,
     completeTransaction,
     getDataOperator,
-    getDataOperatorDetail
+    getDataOperatorDetail,
+    getDataDiscoverTrasnaction
 }

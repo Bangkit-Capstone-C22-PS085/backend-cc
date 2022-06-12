@@ -14,14 +14,14 @@ router.get("/transactions/:id", [
     verifyRole.checkIsOperator
 ], transactionsController.getDataOperatorDetail)
 
+router.get("/transactions-discover", [
+    verifyToken.verifyToken,
+    verifyRole.checkIsOperator
+], transactionsController.getDataDiscoverTrasnaction)
+
 router.put("/transactions/buy/:id", [
     verifyToken.verifyToken,
     verifyRole.checkIsOperator
 ], transactionsController.buyTransaction)
-
-router.put("/transactions/complete/:id", [
-    verifyToken.verifyToken,
-    verifyRole.checkIsOperator
-], transactionsController.completeTransaction)
 
 module.exports = router
