@@ -4,11 +4,17 @@ const { Users } = require("../models")
 
 const verifyToken = async (req, res, next) => {
     let authorization = req.headers["authorization"]
+    if (!authorization) {
+        return res.status(403).send({
+            message: "No auth provided!"
+        });
+    }
+
     let token = authorization.split(' ')[1]
 
     if (!token) {
         return res.status(403).send({
-            message: "No token provided!"
+            message: "No auth provided!"
         });
     }
 

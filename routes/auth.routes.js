@@ -7,5 +7,5 @@ const authJwt = require("../middleware/authJwt")
 router.get("/me", [authJwt.verifyToken], authController.me);
 router.post("/login", authController.login);
 router.post("/register", [verifiySignUp.checkDuplicateUsernameorEmail], authController.register);
-
+router.put("/update-address", [authJwt.verifyToken], authController.updateAddress)
 module.exports = router

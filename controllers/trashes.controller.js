@@ -5,7 +5,6 @@ const FormData = require('form-data');
 const getPrice = async (req, res) => {
     try {
         const b64 = req.body.b64;
-
         const form = new FormData();
         form.append('b64', b64);
 
@@ -15,7 +14,6 @@ const getPrice = async (req, res) => {
         })
 
         const responsePredict = await getModelPredict.json();
-        
         const data = await Trashes.findOne({
             where: { jenis: responsePredict.image.label }
         });
