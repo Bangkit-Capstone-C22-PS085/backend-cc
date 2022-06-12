@@ -2,7 +2,8 @@ require('dotenv').config();
 const { Users, Members, Operators } = require("../models")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const userEnums = require("../config/userEnums")
+const userEnums = require("../config/userEnums");
+const { Op } = require('sequelize');
 
 const login = async (req, res) => {
     try {
@@ -10,7 +11,10 @@ const login = async (req, res) => {
         
         const user = await Users.findOne({
             where:{
-                username
+                [Op.or]: [
+                    {username},
+                    {email: username}
+                ]
             },
             include: ["member", "operator"]
         })
@@ -105,10 +109,51 @@ const me = async (req, res) => {
     }
 }
 
+const updateAddress = async (req, res) => {
+    try {
+        let { long, lat, address } = req.body
+        let user_id = req.user_id
+        
+        const getData = await Users.findOne({where:{id:user_id}})
+
+        if(!getData){
+            return res.status(404).json({
+                message: "Data not found!"
+            })
+        }
+
+        let data
+        if(getData.type == "OPERATOR"){
+            data = await Operators.update({
+                long, lat, address
+            },{ 
+                where: { id: getData.id } 
+            });
+        }else{
+            data = await Members.update({
+                long, lat, address
+            },{ 
+                where: { id: getData.id } 
+            });
+        }
+
+
+        res.status(200).json({
+            message: "Berhasil update profile!",
+            data,
+        })
+    } catch (err) {
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
 const generateAccessToken = (payload, secretKey, expires) => jwt.sign(payload, secretKey, expires);
 
 module.exports = {
     login,
     register,
-    me
+    me,
+    updateAddress
 }
